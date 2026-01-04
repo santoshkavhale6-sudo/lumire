@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Search, Menu, User, LogOut, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, Search, Menu, User, LogOut, ShieldCheck, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -126,6 +126,13 @@ const Header = () => {
                             <User className="w-5 h-5" />
                         </button>
                     )}
+
+                    {/* Wishlist */}
+                    <Link href="/wishlist">
+                        <button className="p-2 hover:text-primary transition-colors">
+                            <Heart className="w-5 h-5" />
+                        </button>
+                    </Link>
 
                     {/* Cart */}
                     <button
