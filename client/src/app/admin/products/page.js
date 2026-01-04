@@ -82,7 +82,7 @@ export default function AdminProducts() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-4">
                                         <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
-                                            <Image src={product.image} alt={product.name} fill className="object-cover" />
+                                            <Image src={product.image} alt={product.name} fill unoptimized className="object-cover" />
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-900">{product.name}</p>

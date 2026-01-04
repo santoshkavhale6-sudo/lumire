@@ -16,7 +16,9 @@ export default function Home() {
     fetch(getApiUrl('products'))
       .then(res => res.json())
       .then(data => {
-        setProducts(data);
+        // Sort by newest first
+        const sorted = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setProducts(sorted);
         setLoading(false);
       })
       .catch(err => {

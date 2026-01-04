@@ -14,11 +14,12 @@ const ProductCard = ({ product }) => {
             viewport={{ once: true }}
             className="group relative"
         >
-            <Link href={`/product/${product.id}`} className="block overflow-hidden bg-gray-50 aspect-[4/5] relative">
+            <Link href={`/product/${product._id}`} className="block overflow-hidden bg-gray-50 aspect-[4/5] relative">
                 <Image
                     src={product.image}
                     alt={product.name}
                     fill
+                    unoptimized
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
 
@@ -32,7 +33,7 @@ const ProductCard = ({ product }) => {
 
             <div className="mt-4 space-y-1">
                 <h3 className="text-lg font-medium text-foreground">
-                    <Link href={`/product/${product.id}`}>
+                    <Link href={`/product/${product._id}`}>
                         <span aria-hidden="true" className="absolute inset-0" />
                         {product.name}
                     </Link>
