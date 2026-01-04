@@ -100,9 +100,11 @@ export default function AdminProducts() {
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                        <button className="p-2 text-gray-400 hover:text-primary transition-colors">
-                                            <Edit className="w-4 h-4" />
-                                        </button>
+                                        <Link href={`/admin/products/${product._id}`}>
+                                            <button className="p-2 text-gray-400 hover:text-primary transition-colors">
+                                                <Edit className="w-4 h-4" />
+                                            </button>
+                                        </Link>
                                         <button
                                             className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                                             onClick={() => handleDelete(product._id)}

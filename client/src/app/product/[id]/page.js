@@ -11,39 +11,53 @@ import { Share2, Heart, Box } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 
+import { getApiUrl } from '@/lib/api';
+
+// ... (existing imports)
+
 export default function ProductPage() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [selectedImage, setSelectedImage] = useState(null);
     const [activeTab, setActiveTab] = useState('details');
     const { addToCart } = useCart();
     const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
 
     useEffect(() => {
-        // Fetch from API or mock data
-        // For now, trusting mock data import to keep it simple as per previous step, 
-        // but ideally this fetches from /api/products
+        if (!id) return;
+
+        // Try to find in static data first (optional, but good for speed)
         const found = products.find(p => p.id === parseInt(id) || p._id === id);
 
-        // Fallback for string ID from mongo
-        if (!found) {
-            // If not found in static, it might be dynamic API data
-            fetch(`http://localhost:5000/api/products/${id}`)
-                .then(res => res.json())
+        if (found) {
+            setProduct(found);
+            setSelectedImage(found.image);
+            setLoading(false);
+        } else {
+            // Fetch from API
+            fetch(getApiUrl(`products/${id}`))
+                .then(res => {
+                    if (!res.ok) throw new Error('Product not found');
+                    return res.json();
+                })
                 .then(data => {
                     setProduct(data);
                     setSelectedImage(data.image);
+                    setLoading(false);
                 })
-                .catch(err => console.error(err));
-        } else {
-            setProduct(found);
-            setSelectedImage(found.image);
+                .catch(err => {
+                    console.error(err);
+                    setError(true);
+                    setLoading(false);
+                });
         }
     }, [id]);
 
-    if (!product) {
-        return <div className="min-h-screen grid place-items-center">Loading...</div>;
-    }
+    if (loading) return <div className="min-h-screen grid place-items-center">Loading...</div>;
+    if (error || !product) return <div className="min-h-screen grid place-items-center">Product not found</div>;
 
     const inWishlist = isInWishlist(product._id || product.id);
 
