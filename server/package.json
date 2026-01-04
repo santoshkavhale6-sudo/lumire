@@ -4,7 +4,7 @@
     "description": "Backend API for LUMIÈRE Luxury Store",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js",
+        "start": "node start.mjs",
         "dev": "nodemon index.js",
         "test": "jest"
     },
