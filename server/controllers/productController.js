@@ -136,6 +136,11 @@ const seedProducts = async (req, res) => {
 // @access  Private/Admin
 const createProduct = async (req, res) => {
     try {
+        // Sanitize SKU: Convert empty string to undefined to avoid duplicate key error
+        if (req.body.sku === "") {
+            req.body.sku = undefined;
+        }
+
         const product = new Product(req.body);
         const createdProduct = await product.save();
         res.status(201).json(createdProduct);
@@ -153,6 +158,11 @@ const updateProduct = async (req, res) => {
         const product = await Product.findById(req.params.id);
 
         if (product) {
+            // Sanitize SKU
+            if (req.body.sku === "") {
+                req.body.sku = undefined;
+            }
+
             Object.assign(product, req.body);
             const updatedProduct = await product.save();
             res.json(updatedProduct);
