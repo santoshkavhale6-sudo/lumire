@@ -1,0 +1,111 @@
+.product-card {
+    position: relative;
+    text-align: center;
+    transition: transform var(--transition-fast);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-image-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 15px;
+    background-color: #f0f0f0;
+    aspect-ratio: 1;
+    /* Square images */
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity var(--transition-fast);
+}
+
+.badge-new {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: var(--color-white);
+    color: var(--color-primary);
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 2;
+    box-shadow: var(--shadow-sm);
+}
+
+.product-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+    transform: translateY(100%);
+    transition: transform var(--transition-fast);
+}
+
+.product-card:hover .product-actions {
+    transform: translateY(0);
+}
+
+.action-btn {
+    background-color: var(--color-white);
+    color: var(--color-primary);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.action-btn:hover {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+.quick-add {
+    width: auto;
+    padding: 0 20px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-radius: 20px;
+}
+
+.product-details {
+    padding: 10px;
+}
+
+.product-name {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: var(--color-primary);
+}
+
+.product-category {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    margin-bottom: 5px;
+}
+
+.product-price {
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: 1.1rem;
+}

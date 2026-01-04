@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1c1c1c;
+
+  --primary: #c5a059;
+  /* Gold */
+  --primary-foreground: #ffffff;
+
+  --accent: #f4f4f4;
+  --accent-foreground: #1c1c1c;
+
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
+
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f0f0f;
+    --foreground: #ededed;
+
+    --primary: #d4b06a;
+    --primary-foreground: #000000;
+
+    --accent: #1a1a1a;
+    --accent-foreground: #ededed;
+
+    --muted: #1f1f1f;
+    --muted-foreground: #a3a3a3;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+/* Luxury Utilities */
+.container-custom {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Animations using Tailwind v4 syntax if needed, but framer-motion is preferred for complex ones */

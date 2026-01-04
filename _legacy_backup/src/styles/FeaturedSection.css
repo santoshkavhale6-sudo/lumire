@@ -1,0 +1,30 @@
+.featured-section {
+    padding: var(--spacing-xl) var(--spacing-md);
+    background-color: var(--color-white);
+    /* Slightly different bg for contrast usually? or Keep same */
+}
+
+.section-description {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-md);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.btn-secondary.dark {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    padding: 12px 28px;
+}
+
+.btn-secondary.dark:hover {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+}

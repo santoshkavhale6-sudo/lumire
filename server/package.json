@@ -1,0 +1,28 @@
+{
+    "name": "lumiere-server",
+    "version": "1.0.0",
+    "description": "Backend API for LUMIÈRE Luxury Store",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon index.js",
+        "test": "jest"
+    },
+    "dependencies": {
+        "@langchain/core": "^1.1.8",
+        "@langchain/google-genai": "^2.1.3",
+        "@langchain/langgraph": "^1.0.7",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "langchain": "^1.2.3",
+        "mongoose": "^8.21.0",
+        "razorpay": "^2.9.6",
+        "zod": "^4.3.4"
+    },
+    "devDependencies": {
+        "jest": "^30.2.0",
+        "nodemon": "^3.0.1",
+        "supertest": "^7.1.4"
+    }
+}

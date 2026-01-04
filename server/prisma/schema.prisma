@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("customer") // customer, admin
+  isAdmin   Boolean  @default(false)      // Kept for backward compatibility logic
+  wishlist  Product[] @relation("UserWishlist") // Implicit many-to-many
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id           String   @id @default(uuid()) // Using UUID for MongoDB ID compatibility if needed, else Int
+  name         String
+  image        String
+  images       String[] // Array of strings for multiple images
+  description  String
+  brand        String   @default("LUMIÈRE")
+  category     String
+  price        Float    @default(0)
+  countInStock Int      @default(0)
+  specs        Json?    // Flexible JSON for product specs
+  
+  wishlistedBy User[]   @relation("UserWishlist")
+  orderItems   OrderItem[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  user            User?       @relation(fields: [userId], references: [id])
+  userId          Int?
+  
+  orderItems      OrderItem[]
+  shippingAddress Json        // { address, city, postalCode, country }
+  paymentMethod   String
+  
+  paymentResult   Json?       // { id, status, update_time, email_address }
+  
+  taxPrice        Float       @default(0.0)
+  shippingPrice   Float       @default(0.0)
+  totalPrice      Float       @default(0.0)
+  
+  isPaid          Boolean     @default(false)
+  paidAt          DateTime?
+  isDelivered     Boolean     @default(false)
+  deliveredAt     DateTime?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  name      String
+  qty       Int
+  image     String
+  price     Float
+  
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+}
+
+model Settings {
+  id           Int      @id @default(autoincrement())
+  contactInfo  Json     // { phone, email, address, workingHours, mapUrl }
+  socialLinks  Json     // { instagram, facebook, whatsapp, youtube }
+  isDefault    Boolean  @default(true) @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
