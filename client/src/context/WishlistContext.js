@@ -45,10 +45,12 @@ export const WishlistProvider = ({ children }) => {
     };
 
     const addToWishlist = async (product) => {
+        const productId = product._id || product.id;
+
         // Optimistic UI update
         const prevWishlist = [...wishlist];
         setWishlist(prev => {
-            const exists = prev.find(item => item._id === product._id);
+            const exists = prev.find(item => (item._id || item.id) === productId);
             if (exists) return prev;
             return [...prev, product];
         });
@@ -61,7 +63,7 @@ export const WishlistProvider = ({ children }) => {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${user.token}`,
                     },
-                    body: JSON.stringify({ productId: product._id }),
+                    body: JSON.stringify({ productId }),
                 });
                 if (!res.ok) throw new Error('Failed to sync');
             } catch (error) {
@@ -73,7 +75,7 @@ export const WishlistProvider = ({ children }) => {
             // Local Storage fallback
             const updated = [...prevWishlist, product];
             // Check existence again to avoid duplicates in storage if strict mode runs twice
-            const exists = prevWishlist.find(item => item._id === product._id);
+            const exists = prevWishlist.find(item => (item._id || item.id) === productId);
             if (!exists) {
                 localStorage.setItem('lumiere_wishlist', JSON.stringify(updated));
             }
@@ -82,7 +84,7 @@ export const WishlistProvider = ({ children }) => {
 
     const removeFromWishlist = async (productId) => {
         const prevWishlist = [...wishlist];
-        setWishlist(prev => prev.filter(item => item._id !== productId));
+        setWishlist(prev => prev.filter(item => (item._id || item.id) !== productId));
 
         if (user) {
             try {
@@ -98,13 +100,13 @@ export const WishlistProvider = ({ children }) => {
                 setWishlist(prevWishlist);
             }
         } else {
-            const updated = prevWishlist.filter(item => item._id !== productId);
+            const updated = prevWishlist.filter(item => (item._id || item.id) !== productId);
             localStorage.setItem('lumiere_wishlist', JSON.stringify(updated));
         }
     };
 
     const isInWishlist = (productId) => {
-        return wishlist.some(item => item._id === productId);
+        return wishlist.some(item => (item._id || item.id) === productId);
     };
 
     return (
