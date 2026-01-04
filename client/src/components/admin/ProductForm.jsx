@@ -6,8 +6,11 @@ import { Save, X, Plus, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { API_BASE_URL } from '@/lib/api';
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function ProductForm({ initialData = null }) {
     const router = useRouter();
+    const { user } = useAuth();
     const isEdit = !!initialData;
 
     const [formData, setFormData] = useState(initialData || {
@@ -62,14 +65,18 @@ export default function ProductForm({ initialData = null }) {
 
             const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user?.token}`
+                },
                 body: JSON.stringify(formData)
             });
 
             if (res.ok) {
                 router.push('/admin/products');
             } else {
-                alert('Failed to save product');
+                const data = await res.json();
+                alert(data.message || 'Failed to save product');
             }
         } catch (error) {
             console.error(error);

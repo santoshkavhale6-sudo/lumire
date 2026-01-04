@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/Button';
 import { formattedPrice } from '@/lib/data';
 import { getApiUrl } from '@/lib/api';
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function AdminProducts() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     useEffect(() => {
         fetch(getApiUrl('products'))
@@ -28,8 +31,25 @@ export default function AdminProducts() {
 
     const handleDelete = async (id) => {
         if (!confirm('Are you sure you want to delete this product?')) return;
-        // Logic to delete would go here (requires backend delete endpoint)
-        alert('Delete feature coming in next step!');
+
+        try {
+            const res = await fetch(getApiUrl(`products/${id}`), {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+
+            if (res.ok) {
+                setProducts(products.filter(p => p._id !== id));
+            } else {
+                const data = await res.json();
+                alert(data.message || 'Failed to delete product');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error deleting product');
+        }
     };
 
     return (
