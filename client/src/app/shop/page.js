@@ -1,22 +1,57 @@
 "use client";
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { products } from '@/lib/data';
 import ProductCard from '@/components/ui/ProductCard';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { getApiUrl } from '@/lib/api';
 
 function ShopContent() {
     const searchParams = useSearchParams();
     const search = searchParams.get('search')?.toLowerCase() || '';
     const category = searchParams.get('category')?.toLowerCase() || '';
+    const sort = searchParams.get('sort') || '';
 
-    const filteredProducts = products.filter(product => {
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const res = await fetch(getApiUrl('products'));
+                if (!res.ok) throw new Error('Failed to fetch products');
+                const data = await res.json();
+                setProducts(data);
+            } catch (err) {
+                console.error("Error fetching products:", err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
+    let filteredProducts = products.filter(product => {
         const matchesSearch = !search || product.name.toLowerCase().includes(search);
-        const matchesCategory = !category || product.category === category;
+        const matchesCategory = !category || product.category?.toLowerCase() === category;
         return matchesSearch && matchesCategory;
     });
+
+    // Apply Sorting
+    if (sort === 'newest') {
+        filteredProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sort === 'price-asc') {
+        filteredProducts.sort((a, b) => a.price - b.price);
+    } else if (sort === 'price-desc') {
+        filteredProducts.sort((a, b) => b.price - a.price);
+    }
+
+    if (loading) return <div className="text-center py-20">Loading collection...</div>;
+    if (error) return <div className="text-center py-20 text-red-500">Error: {error}</div>;
 
     return (
         <>
@@ -30,7 +65,7 @@ function ShopContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-6">
                 {filteredProducts.length > 0 ? (
                     filteredProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        <ProductCard key={product._id} product={product} />
                     ))
                 ) : (
                     <div className="col-span-full py-20 text-center text-muted-foreground">

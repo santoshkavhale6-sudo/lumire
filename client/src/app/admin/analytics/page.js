@@ -37,7 +37,7 @@ export default function AdminAnalytics() {
     }, []);
 
     // Calculate max value for chart scaling
-    const maxSales = salesData.length > 0 ? Math.max(...salesData.map(d => d.sales)) : 10000;
+    const maxSales = salesData?.length > 0 ? Math.max(...salesData.map(d => d.sales)) : 10000;
 
     if (loading) return <AdminLayout>Loading Analytics...</AdminLayout>;
 

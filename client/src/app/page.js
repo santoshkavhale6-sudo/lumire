@@ -51,9 +51,11 @@ export default function Home() {
               Discover the new standard of luxury with our handcrafted pieces designed to brilliantly shine.
             </p>
             <div className="pt-4 opacity-0 animate-[slide-up_1s_ease-out_0.8s_forwards]">
-              <Button size="lg" className="rounded-full px-8 text-base">
-                Shop Now
-              </Button>
+              <Link href="/shop">
+                <Button size="lg" className="rounded-full px-8 text-base">
+                  Shop Now
+                </Button>
+              </Link>
             </div>
           </div>
         </section>

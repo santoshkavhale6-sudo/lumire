@@ -1,13 +1,13 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { getApiUrl } from '@/lib/api';
 
 export const getSettings = async () => {
-    const res = await fetch(`${API_URL}/settings`);
+    const res = await fetch(getApiUrl('settings'));
     if (!res.ok) throw new Error('Failed to fetch settings');
     return res.json();
 };
 
 export const updateSettings = async (settingsData, token) => {
-    const res = await fetch(`${API_URL}/settings`, {
+    const res = await fetch(getApiUrl('settings'), {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

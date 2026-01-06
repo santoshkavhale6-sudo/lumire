@@ -4,6 +4,7 @@ const productSchema = mongoose.Schema({
     name: { type: String, required: true },
     image: { type: String, required: true }, // Main thumbnail
     images: [{ type: String }], // Gallery images
+    threeDImage: { type: String }, // URL for 3D model or 360 view
     description: { type: String, required: true },
     brand: { type: String, required: true, default: 'LUMIÈRE' },
     category: { type: String, required: true },

@@ -48,13 +48,26 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signup = async (name, email, password) => {
-        // For now, simple mock signup or implement API similarly
-        // This is a placeholder as backend signup isn't built yet
-        const newUser = { name, email, role: 'customer' };
-        setUser(newUser);
-        localStorage.setItem('user', JSON.stringify(newUser));
-        setIsAuthModalOpen(false);
-        return { success: true };
+        try {
+            const res = await fetch(getApiUrl('users'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setUser(data);
+                localStorage.setItem('user', JSON.stringify(data));
+                setIsAuthModalOpen(false);
+                return { success: true };
+            } else {
+                return { success: false, error: data.message };
+            }
+        } catch (error) {
+            return { success: false, error: 'Connection error' };
+        }
     };
 
     const logout = () => {

@@ -1,3 +1,4 @@
+const generateToken = require('../utils/generateToken');
 const User = require('../models/User');
 
 // @desc    Auth user & get token
@@ -16,7 +17,7 @@ const authUser = async (req, res) => {
                 email: user.email,
                 isAdmin: user.isAdmin,
                 role: user.role,
-                token: 'dummy_token_123'
+                token: generateToken(user._id)
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
@@ -54,7 +55,7 @@ const registerUser = async (req, res) => {
                 email: user.email,
                 isAdmin: user.isAdmin,
                 role: user.role,
-                token: 'dummy_token_123'
+                token: generateToken(user._id)
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
@@ -83,4 +84,16 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-module.exports = { authUser, registerUser, getUserProfile };
+// @desc    Get all users
+// @route   GET /api/users
+// @access  Private/Admin
+const getUsers = async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { authUser, registerUser, getUserProfile, getUsers };

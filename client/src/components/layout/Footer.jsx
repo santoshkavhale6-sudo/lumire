@@ -19,7 +19,7 @@ const Footer = () => {
                         <h3 className="font-heading font-semibold text-foreground mb-4">Shop</h3>
                         <ul className="space-y-2 text-sm">
                             <li><Link href="/shop" className="hover:text-primary transition-colors">All Jewelry</Link></li>
-                            <li><Link href="/shop" className="hover:text-primary transition-colors">New Arrivals</Link></li>
+                            <li><Link href="/shop?sort=newest" className="hover:text-primary transition-colors">New Arrivals</Link></li>
                             <li><Link href="/shop" className="hover:text-primary transition-colors">Best Sellers</Link></li>
                             <li><Link href="/shop" className="hover:text-primary transition-colors">Collections</Link></li>
                         </ul>

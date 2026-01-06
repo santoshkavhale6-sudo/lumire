@@ -8,7 +8,7 @@ const WishlistContext = createContext();
 
 export const WishlistProvider = ({ children }) => {
     const [wishlist, setWishlist] = useState([]);
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
 
     // Load wishlist from local storage on mount (for guest) or when switching users
     useEffect(() => {
@@ -29,15 +29,13 @@ export const WishlistProvider = ({ children }) => {
                     Authorization: `Bearer ${user.token}`,
                 },
             });
+            if (res.status === 401) {
+                logout();
+                return;
+            }
             if (res.ok) {
                 const data = await res.json();
-                // Backend returns array of product objects or IDs. 
-                // We should ensure it matches our frontend expectation.
-                // Assuming backend returns populated products or we handle it.
-                // If backend returns populated array:
                 setWishlist(data);
-                // Also update local storage to keep in sync? Maybe not for security/staleness,
-                // but good for offline fallback. For now, let's rely on API for auth users.
             }
         } catch (error) {
             console.error("Failed to fetch wishlist", error);
@@ -65,7 +63,23 @@ export const WishlistProvider = ({ children }) => {
                     },
                     body: JSON.stringify({ productId }),
                 });
-                if (!res.ok) throw new Error('Failed to sync');
+
+                if (res.status === 401) {
+                    logout();
+                    // Revert optimistic update since auth failed
+                    setWishlist(prevWishlist);
+                    return;
+                }
+
+                if (!res.ok) {
+                    // Start reading body to check error message
+                    const data = await res.json().catch(() => ({}));
+                    if (res.status === 400 && data.message === 'Product already in wishlist') {
+                        // This is fine, keep the optimistic update
+                        return;
+                    }
+                    throw new Error(data.message || 'Failed to sync');
+                }
             } catch (error) {
                 console.error("Add to wishlist failed", error);
                 // Revert on failure
@@ -94,6 +108,13 @@ export const WishlistProvider = ({ children }) => {
                         Authorization: `Bearer ${user.token}`,
                     },
                 });
+
+                if (res.status === 401) {
+                    logout();
+                    setWishlist(prevWishlist);
+                    return;
+                }
+
                 if (!res.ok) throw new Error('Failed to sync');
             } catch (error) {
                 console.error("Remove from wishlist failed", error);

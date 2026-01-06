@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useCart } from '@/context/CartContext';
+import { useRouter } from 'next/navigation';
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +11,7 @@ import { formattedPrice } from '@/lib/data';
 
 const CartDrawer = () => {
     const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, cartTotal } = useCart();
+    const router = useRouter();
 
     return (
         <AnimatePresence>
@@ -52,7 +54,7 @@ const CartDrawer = () => {
                                 </div>
                             ) : (
                                 cart.map(item => (
-                                    <div key={item.id} className="flex gap-4">
+                                    <div key={item._id || item.id} className="flex gap-4">
                                         <div className="relative w-20 h-24 bg-gray-50 flex-shrink-0">
                                             <Image
                                                 src={item.image}
@@ -65,7 +67,7 @@ const CartDrawer = () => {
                                             <div>
                                                 <div className="flex justify-between items-start">
                                                     <h3 className="font-medium text-sm leading-tight pr-4">{item.name}</h3>
-                                                    <button onClick={() => removeFromCart(item.id)} className="text-muted-foreground hover:text-red-500 transition-colors">
+                                                    <button onClick={() => removeFromCart(item._id || item.id)} className="text-muted-foreground hover:text-red-500 transition-colors">
                                                         <X className="w-4 h-4" />
                                                     </button>
                                                 </div>
@@ -73,9 +75,9 @@ const CartDrawer = () => {
                                             </div>
                                             <div className="flex justify-between items-end">
                                                 <div className="flex items-center border border-border rounded-md">
-                                                    <button onClick={() => updateQuantity(item.id, -1)} className="p-1 hover:bg-accent"><Minus className="w-3 h-3" /></button>
+                                                    <button onClick={() => updateQuantity(item._id || item.id, -1)} className="p-1 hover:bg-accent"><Minus className="w-3 h-3" /></button>
                                                     <span className="text-xs w-8 text-center">{item.quantity}</span>
-                                                    <button onClick={() => updateQuantity(item.id, 1)} className="p-1 hover:bg-accent"><Plus className="w-3 h-3" /></button>
+                                                    <button onClick={() => updateQuantity(item._id || item.id, 1)} className="p-1 hover:bg-accent"><Plus className="w-3 h-3" /></button>
                                                 </div>
                                                 <p className="text-sm font-medium">{formattedPrice(item.price * item.quantity)}</p>
                                             </div>
@@ -93,7 +95,15 @@ const CartDrawer = () => {
                                     <span className="font-semibold">{formattedPrice(cartTotal)}</span>
                                 </div>
                                 <p className="text-xs text-muted-foreground text-center">Shipping and taxes calculated at checkout.</p>
-                                <Button className="w-full py-6 text-base">Checkout</Button>
+                                <Button
+                                    className="w-full py-6 text-base"
+                                    onClick={() => {
+                                        setIsCartOpen(false);
+                                        router.push('/checkout');
+                                    }}
+                                >
+                                    Checkout
+                                </Button>
                             </div>
                         )}
                     </motion.div>
