@@ -16,7 +16,8 @@ import {
     Shield,
     LifeBuoy,
     LogOut,
-    ChevronRight
+    ChevronRight,
+    ArrowLeft
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -51,14 +52,22 @@ export default function AccountLayout({ children }) {
     ];
 
     return (
-        <div className="min-h-screen bg-[#FAF7F2]">
-            <Header />
+        <div className="min-h-screen bg-[#FAF7F2] relative">
+            {/* Minimal Account Header / Back Button */}
+            <div className="absolute top-8 right-8 z-10">
+                <Link href="/shop" className="flex items-center gap-2 text-[#8C8C8C] hover:text-[#C9A24D] transition-colors group">
+                    <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Back to Boutique</span>
+                    <div className="w-10 h-10 rounded-full border border-[#F0EBE0] bg-white flex items-center justify-center group-hover:border-[#C9A24D] group-hover:bg-[#C9A24D] group-hover:text-white transition-all shadow-sm">
+                        <ArrowLeft className="w-4 h-4 mr-0.5" />
+                    </div>
+                </Link>
+            </div>
 
-            <main className="pt-32 pb-24 container-custom">
+            <main className="pt-24 pb-24 container-custom">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     {/* Sidebar */}
                     <aside className="lg:col-span-3">
-                        <div className="bg-white rounded-2xl p-6 border border-[#F0EBE0] shadow-sm sticky top-32">
+                        <div className="bg-white rounded-2xl p-6 border border-[#F0EBE0] shadow-sm sticky top-12">
                             <div className="space-y-1">
                                 {menuItems.map((item) => (
                                     <NavLink
