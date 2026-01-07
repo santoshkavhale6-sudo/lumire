@@ -23,11 +23,11 @@ export default function AdminAnalytics() {
             .then(res => res.json())
             .then(data => {
                 setStats({
-                    ...data.stats,
+                    ...(data.stats || {}),
                     conversionRate: 3.2 // Hardcoded for now as we don't track visits yet
                 });
-                setSalesData(data.dailySales);
-                setBestSellers(data.bestSellers);
+                setSalesData(data.dailySales || []);
+                setBestSellers(data.bestSellers || []);
                 setLoading(false);
             })
             .catch(err => {

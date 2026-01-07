@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -13,6 +12,21 @@ import { motion } from 'framer-motion';
 import { Lock, ShieldCheck, CreditCard, Wallet, Truck, ChevronLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+
+const FloatingInput = ({ label, type = "text", value, onChange, placeholder = "" }) => (
+    <div className="relative group">
+        <input
+            type={type}
+            className="block w-full px-0 py-3 text-[#1c1c1c] bg-transparent border-b border-[#e5e5e5] focus:border-[#c5a059] appearance-none focus:outline-none focus:ring-0 peer transition-colors duration-300"
+            placeholder=" "
+            value={value}
+            onChange={onChange}
+        />
+        <label className="absolute text-sm text-[#8C8C8C] duration-300 transform -translate-y-4 scale-75 top-3 z-10 origin-[0] peer-focus:text-[#c5a059] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 left-0 pointer-events-none">
+            {label}
+        </label>
+    </div>
+);
 
 export default function CheckoutPage() {
     const { cart, cartTotal, clearCart } = useCart();
@@ -28,8 +42,21 @@ export default function CheckoutPage() {
         address: '',
         city: '',
         zip: '',
+        country: 'India',
         phone: ''
     });
+
+    const [selectedMethod, setSelectedMethod] = useState(null);
+
+    const loadRazorpay = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
 
     const handlePlaceOrder = async () => {
         if (!user) {
@@ -37,8 +64,27 @@ export default function CheckoutPage() {
             return;
         }
 
+        if (!selectedMethod) {
+            alert('Please select a payment method');
+            return;
+        }
+
+        // Basic validation for shipping address
+        const requiredFields = ['address', 'city', 'zip', 'country', 'firstName', 'lastName'];
+        const missingFields = requiredFields.filter(field => !formData[field]);
+        if (missingFields.length > 0) {
+            alert(`Please fill in all shipping details: ${missingFields.join(', ')}`);
+            return;
+        }
+
         setLoading(true);
         try {
+            const isLoaded = await loadRazorpay();
+            if (!isLoaded) {
+                alert('Razorpay SDK failed to load');
+                return;
+            }
+
             const orderItems = cart.map(item => ({
                 name: item.name,
                 qty: item.quantity,
@@ -47,6 +93,7 @@ export default function CheckoutPage() {
                 product: item._id || item.id,
             }));
 
+            // 1. Create Order on Backend
             const res = await fetch(getApiUrl('orders'), {
                 method: 'POST',
                 headers: {
@@ -55,7 +102,13 @@ export default function CheckoutPage() {
                 },
                 body: JSON.stringify({
                     orderItems,
-                    paymentMethod: 'Razorpay',
+                    shippingAddress: {
+                        address: formData.address,
+                        city: formData.city,
+                        postalCode: formData.zip,
+                        country: formData.country || 'India' // Defaulting to India as per design context
+                    },
+                    paymentMethod: selectedMethod,
                     itemsPrice: cartTotal,
                     shippingPrice: 0,
                     taxPrice: 0,
@@ -63,16 +116,120 @@ export default function CheckoutPage() {
                 })
             });
 
-            if (res.ok) {
-                const order = await res.json();
-                clearCart();
-                router.push(`/order/${order._id}`);
-            } else {
-                alert('Place order failed');
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || 'Place order failed');
             }
+
+            // 2. Handle Mock Payment Verification (Bypass Razorpay UI for mock IDs)
+            if (data.razorpayOrderId && data.razorpayOrderId.startsWith('mock_')) {
+                console.log("Mock Order detected. Verifying automatically...");
+                try {
+                    const verifyRes = await fetch(getApiUrl('orders/verify'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${user.token}`
+                        },
+                        body: JSON.stringify({
+                            orderId: data._id,
+                            razorpay_order_id: data.razorpayOrderId,
+                            razorpay_payment_id: `pay_mock_${Date.now()}`,
+                            razorpay_signature: 'mock_signature'
+                        })
+                    });
+
+                    if (verifyRes.ok) {
+                        clearCart();
+                        router.push(`/order/${data._id}`);
+                        return; // Exit early
+                    } else {
+                        const verifyData = await verifyRes.json();
+                        throw new Error(verifyData.message || 'Mock verification failed');
+                    }
+                } catch (err) {
+                    console.error('Mock verification error:', err);
+                    throw new Error('Failed to process mock payment');
+                }
+            }
+
+            // 3. Open Razorpay Checkout (Only for real orders)
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: data.currency,
+                name: "LUMIÈRE",
+                description: "Luxury Handcrafted Jewelry",
+                image: "https://example.com/logo.png", // Replace with real logo
+                order_id: data.razorpayOrderId,
+                handler: async function (response) {
+                    // 3. Verify Payment
+                    try {
+                        const verifyRes = await fetch(getApiUrl('orders/verify'), {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${user.token}`
+                            },
+                            body: JSON.stringify({
+                                orderId: data._id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        });
+
+                        const verifyData = await verifyRes.json();
+                        if (verifyRes.ok) {
+                            clearCart();
+                            router.push(`/order/${data._id}`);
+                        } else {
+                            alert(verifyData.message || 'Payment verification failed');
+                        }
+                    } catch (error) {
+                        console.error('Verify error:', error);
+                        alert('Payment verification failed');
+                    }
+                },
+                prefill: {
+                    name: user.name,
+                    email: user.email,
+                    contact: formData.phone
+                },
+                theme: {
+                    color: "#c5a059"
+                },
+                // Attempt to restrict method based on config - Razorpay standard checkout usually requires 'preferences' or 'method' filtering
+                // For this demo, we can just highlight the user's choice is respected by the backend config logic
+                config: {
+                    display: {
+                        blocks: {
+                            banks: {
+                                name: 'Pay using ' + selectedMethod.toUpperCase(),
+                                instruments: [
+                                    {
+                                        method: selectedMethod === 'card' ? 'card' : (selectedMethod === 'upi' ? 'upi' : 'wallet')
+                                    }
+                                ],
+                            },
+                        },
+                        sequence: ['block.banks'],
+                        preferences: {
+                            show_default_blocks: false, // Hide other blocks
+                        },
+                    },
+                }
+            };
+
+            const rzp1 = new window.Razorpay(options);
+            rzp1.on('payment.failed', function (response) {
+                alert(response.error.description);
+            });
+            rzp1.open();
+
         } catch (error) {
             console.error(error);
-            alert('Something went wrong');
+            alert(error.message || 'Something went wrong');
         } finally {
             setLoading(false);
         }
@@ -81,7 +238,6 @@ export default function CheckoutPage() {
     if (cart.length === 0) {
         return (
             <div className="min-h-screen bg-[#FDFCF8] flex flex-col">
-                <Header />
                 <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                     <h1 className="text-3xl font-heading mb-4 text-[#1c1c1c]">Your cart is empty</h1>
                     <p className="text-[#595959] mb-8">It seems you haven't chosen your treasure yet.</p>
@@ -96,31 +252,17 @@ export default function CheckoutPage() {
         );
     }
 
-    const FloatingInput = ({ label, type = "text", value, onChange, placeholder = "" }) => (
-        <div className="relative group">
-            <input
-                type={type}
-                className="block w-full px-0 py-3 text-[#1c1c1c] bg-transparent border-b border-[#e5e5e5] focus:border-[#c5a059] appearance-none focus:outline-none focus:ring-0 peer transition-colors duration-300"
-                placeholder=" "
-                value={value}
-                onChange={onChange}
-            />
-            <label className="absolute text-sm text-[#8C8C8C] duration-300 transform -translate-y-4 scale-75 top-3 z-10 origin-[0] peer-focus:text-[#c5a059] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 left-0">
-                {label}
-            </label>
-        </div>
-    );
+
 
     return (
         <div className="min-h-screen bg-[#FDFCF8] selection:bg-[#c5a059] selection:text-white">
-            <div className="fixed top-0 w-full z-50 bg-[#FDFCF8]/80 backdrop-blur-md border-b border-[#F0F0F0]">
+            <div className="fixed top-0 w-full z-50 bg-[#FAF7F2] border-b border-black/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                 <div className="container-custom h-20 flex items-center justify-center relative">
-                    <Link href="/" className="absolute left-6 lg:left-0 flex items-center gap-2 text-[#8C8C8C] hover:text-[#c5a059] transition-colors">
+                    <Link href="/" className="absolute left-6 lg:left-0 flex items-center gap-2 text-[#1E1E1E] hover:text-[#c5a059] transition-colors">
                         <ChevronLeft className="w-4 h-4" />
                         <span className="text-xs uppercase tracking-widest hidden sm:inline">Back</span>
                     </Link>
-                    <h1 className="text-2xl font-heading font-bold tracking-[0.2em] text-[#1c1c1c]">LUMIÈRE</h1>
-                    <div className="absolute right-6 lg:right-0 flex items-center gap-2 text-[#c5a059]">
+                    <div className="absolute right-6 lg:right-0 flex items-center gap-2 text-[#1E1E1E]">
                         <Lock className="w-4 h-4" />
                         <span className="text-xs uppercase tracking-widest hidden sm:inline">Secure</span>
                     </div>
@@ -173,24 +315,79 @@ export default function CheckoutPage() {
                                 </div>
                                 <FloatingInput label="City" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
                                 <FloatingInput label="ZIP Code" value={formData.zip} onChange={(e) => setFormData({ ...formData, zip: e.target.value })} />
+                                <div className="col-span-2">
+                                    <FloatingInput label="Country" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} />
+                                </div>
                             </div>
                         </section>
 
                         {/* Payment Method */}
                         <section>
                             <h3 className="text-xl font-heading text-[#1c1c1c] mb-6">Payment Method</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="border border-[#c5a059] bg-[#c5a059]/5 p-4 rounded-lg flex items-center gap-4 cursor-pointer transition-all">
-                                    <div className="w-5 h-5 rounded-full border-2 border-[#c5a059] flex items-center justify-center">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-[#c5a059]" />
+
+                            <div className="space-y-4">
+                                {/* Credit/Debit Card */}
+                                <div
+                                    onClick={() => setSelectedMethod('card')}
+                                    className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 flex items-center gap-4 ${selectedMethod === 'card'
+                                        ? 'border-[#c5a059] bg-[#c5a059]/5 shadow-[0_0_20px_rgba(197,160,89,0.2)]'
+                                        : 'border-gray-100 hover:border-[#c5a059]/50 bg-white'
+                                        }`}
+                                >
+                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedMethod === 'card' ? 'border-[#c5a059]' : 'border-gray-300'
+                                        }`}>
+                                        {selectedMethod === 'card' && <div className="w-3 h-3 rounded-full bg-[#c5a059]" />}
                                     </div>
-                                    <span className="font-medium text-[#1c1c1c]">Credit/Debit Card</span>
-                                    <CreditCard className="w-5 h-5 ml-auto text-[#8C8C8C]" />
+                                    <div className="flex-1">
+                                        <h4 className="font-medium text-[#1c1c1c]">Credit / Debit Card</h4>
+                                        <p className="text-xs text-[#8C8C8C] mt-1">Visa, Mastercard, Amex</p>
+                                    </div>
+                                    <CreditCard className={`w-6 h-6 ${selectedMethod === 'card' ? 'text-[#c5a059]' : 'text-gray-400'}`} />
+                                    {selectedMethod === 'card' && (
+                                        <motion.div layoutId="glow" className="absolute inset-0 rounded-xl bg-[#c5a059]/5 z-0" />
+                                    )}
                                 </div>
-                                <div className="border border-[#e5e5e5] p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-[#c5a059] transition-all opacity-60">
-                                    <div className="w-5 h-5 rounded-full border-2 border-[#e5e5e5]" />
-                                    <span className="font-medium text-[#1c1c1c]">UPI / Wallets</span>
-                                    <Wallet className="w-5 h-5 ml-auto text-[#8C8C8C]" />
+
+                                {/* UPI */}
+                                <div
+                                    onClick={() => setSelectedMethod('upi')}
+                                    className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 flex items-center gap-4 ${selectedMethod === 'upi'
+                                        ? 'border-[#c5a059] bg-[#c5a059]/5 shadow-[0_0_20px_rgba(197,160,89,0.2)]'
+                                        : 'border-gray-100 hover:border-[#c5a059]/50 bg-white'
+                                        }`}
+                                >
+                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedMethod === 'upi' ? 'border-[#c5a059]' : 'border-gray-300'
+                                        }`}>
+                                        {selectedMethod === 'upi' && <div className="w-3 h-3 rounded-full bg-[#c5a059]" />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-medium text-[#1c1c1c]">UPI</h4>
+                                        <p className="text-xs text-[#8C8C8C] mt-1">Google Pay, PhonePe, Paytm</p>
+                                    </div>
+                                    <div className="flex gap-2 opacity-60">
+                                        {/* Simple icons representation */}
+                                        <div className="w-6 h-6 bg-gray-200 rounded-sm" title="GPay"></div>
+                                        <div className="w-6 h-6 bg-gray-200 rounded-sm" title="PhonePe"></div>
+                                    </div>
+                                </div>
+
+                                {/* Wallet */}
+                                <div
+                                    onClick={() => setSelectedMethod('wallet')}
+                                    className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 flex items-center gap-4 ${selectedMethod === 'wallet'
+                                        ? 'border-[#c5a059] bg-[#c5a059]/5 shadow-[0_0_20px_rgba(197,160,89,0.2)]'
+                                        : 'border-gray-100 hover:border-[#c5a059]/50 bg-white'
+                                        }`}
+                                >
+                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedMethod === 'wallet' ? 'border-[#c5a059]' : 'border-gray-300'
+                                        }`}>
+                                        {selectedMethod === 'wallet' && <div className="w-3 h-3 rounded-full bg-[#c5a059]" />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-medium text-[#1c1c1c]">Wallets</h4>
+                                        <p className="text-xs text-[#8C8C8C] mt-1">Amazon Pay, Mobikwik, Paytm</p>
+                                    </div>
+                                    <Wallet className={`w-6 h-6 ${selectedMethod === 'wallet' ? 'text-[#c5a059]' : 'text-gray-400'}`} />
                                 </div>
                             </div>
 

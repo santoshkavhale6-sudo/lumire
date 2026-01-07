@@ -6,11 +6,49 @@ const User = require('../models/User');
 // @access  Public
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({});
+        const { keyword, category, metal, stone, occasion, gender, minPrice, maxPrice, sort } = req.query;
+
+        // Build Query
+        let query = {};
+
+        if (keyword) {
+            query.name = {
+                $regex: keyword,
+                $options: 'i',
+            };
+        }
+
+        if (category) query.category = { $regex: category, $options: 'i' };
+        if (metal) query.metal = metal;
+        if (stone) query.stone = stone;
+        if (occasion) query.occasion = occasion;
+        if (gender) query.gender = gender;
+
+        if (minPrice || maxPrice) {
+            query.price = {};
+            if (minPrice) query.price.$gte = Number(minPrice);
+            if (maxPrice) query.price.$lte = Number(maxPrice);
+        }
+
+        // Build Sort Option
+        let sortOption = {};
+        if (sort === 'price_asc') {
+            sortOption.price = 1;
+        } else if (sort === 'price_desc') {
+            sortOption.price = -1;
+        } else if (sort === 'newest') {
+            sortOption.createdAt = -1;
+        } else if (sort === 'popular') {
+            sortOption.soldCount = -1;
+        } else {
+            sortOption.createdAt = -1; // Default
+        }
+
+        const products = await Product.find(query).sort(sortOption);
         res.json(products);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: error.message });
     }
 };
 

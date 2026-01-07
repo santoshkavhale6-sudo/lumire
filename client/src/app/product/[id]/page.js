@@ -15,45 +15,42 @@ import { getApiUrl } from '@/lib/api';
 
 // ... (existing imports)
 
+import ShareModal from '@/components/ui/ShareModal';
+// ... existing imports
+
 export default function ProductPage() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isShareOpen, setIsShareOpen] = useState(false);
 
     const [selectedImage, setSelectedImage] = useState(null);
-    const [activeTab, setActiveTab] = useState('details');
     const { addToCart } = useCart();
-    const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
     useEffect(() => {
-        if (!id) return;
-
-        // Try to find in static data first (optional, but good for speed)
-        const found = products.find(p => p.id === parseInt(id) || p._id === id);
-
-        if (found) {
-            setProduct(found);
-            setSelectedImage(found.image);
-            setLoading(false);
-        } else {
-            // Fetch from API
-            fetch(getApiUrl(`products/${id}`))
-                .then(res => {
-                    if (!res.ok) throw new Error('Product not found');
-                    return res.json();
-                })
-                .then(data => {
+        const fetchProduct = async () => {
+            if (!id) return;
+            setLoading(true);
+            try {
+                const { getProductById: fetchById } = await import('@/lib/data');
+                const data = await fetchById(id);
+                if (data) {
                     setProduct(data);
                     setSelectedImage(data.image);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.error(err);
-                    setError(true);
-                    setLoading(false);
-                });
-        }
+                } else {
+                    setError('Product not found');
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                setError('Failed to load product');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProduct();
     }, [id]);
 
     if (loading) return <div className="min-h-screen grid place-items-center">Loading...</div>;
@@ -125,7 +122,7 @@ export default function ProductPage() {
                                         <Heart className={`w-4 h-4 mr-2 ${inWishlist ? 'fill-current' : ''}`} />
                                         {inWishlist ? 'Saved' : 'Wishlist'}
                                     </Button>
-                                    <Button variant="outline" className="flex-1">
+                                    <Button variant="outline" className="flex-1" onClick={() => setIsShareOpen(true)}>
                                         <Share2 className="w-4 h-4 mr-2" /> Share
                                     </Button>
                                 </div>
@@ -143,6 +140,7 @@ export default function ProductPage() {
             </main>
 
             <Footer />
+            <ShareModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} product={product} />
         </div>
     );
 }

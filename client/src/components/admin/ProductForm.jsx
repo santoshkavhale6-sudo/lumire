@@ -168,7 +168,9 @@ export default function ProductForm({ initialData = null }) {
                                 <option value="necklaces">Necklaces</option>
                                 <option value="earrings">Earrings</option>
                                 <option value="bracelets">Bracelets</option>
+                                <option value="pendants">Pendants</option>
                                 <option value="gifts">Gifts</option>
+                                <option value="watches">Watches</option>
                             </select>
                         </div>
                         <div className="space-y-4">
@@ -181,6 +183,69 @@ export default function ProductForm({ initialData = null }) {
                                 placeholder="e.g. Diamond, Gold"
                                 className="w-full p-2 border border-gray-300 rounded-md"
                             />
+                        </div>
+                        <div className="space-y-4">
+                            <label className="block text-sm font-medium text-gray-700">Gender</label>
+                            <select
+                                name="gender"
+                                value={formData.gender || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded-md"
+                            >
+                                <option value="">Select...</option>
+                                <option value="Women">Women</option>
+                                <option value="Men">Men</option>
+                                <option value="Unisex">Unisex</option>
+                            </select>
+                        </div>
+                        <div className="space-y-4">
+                            <label className="block text-sm font-medium text-gray-700">Metal</label>
+                            <select
+                                name="metal"
+                                value={formData.metal || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded-md"
+                            >
+                                <option value="">Select...</option>
+                                <option value="Gold">Gold</option>
+                                <option value="Silver">Silver</option>
+                                <option value="Rose Gold">Rose Gold</option>
+                                <option value="Platinum">Platinum</option>
+                                <option value="White Gold">White Gold</option>
+                            </select>
+                        </div>
+                        <div className="space-y-4">
+                            <label className="block text-sm font-medium text-gray-700">Stone</label>
+                            <select
+                                name="stone"
+                                value={formData.stone || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded-md"
+                            >
+                                <option value="">Select...</option>
+                                <option value="Diamond">Diamond</option>
+                                <option value="Pearl">Pearl</option>
+                                <option value="Ruby">Ruby</option>
+                                <option value="Sapphire">Sapphire</option>
+                                <option value="Emerald">Emerald</option>
+                                <option value="None">None</option>
+                            </select>
+                        </div>
+                        <div className="space-y-4">
+                            <label className="block text-sm font-medium text-gray-700">Occasion</label>
+                            <select
+                                name="occasion"
+                                value={formData.occasion || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded-md"
+                            >
+                                <option value="">Select...</option>
+                                <option value="Wedding">Wedding</option>
+                                <option value="Anniversary">Anniversary</option>
+                                <option value="Birthday">Birthday</option>
+                                <option value="Daily Wear">Daily Wear</option>
+                                <option value="Gifting">Gifting</option>
+                            </select>
                         </div>
                     </div>
                 </div>

@@ -56,7 +56,9 @@ const Footer = () => {
                 <div className="border-t border-border/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-xs">&copy; 2026 Lumière Jewelry. All rights reserved.</p>
                     <div className="flex gap-4">
-                        <Instagram className="w-5 h-5 hover:text-primary transition-colors cursor-pointer" />
+                        <a href="https://www.instagram.com/ntxs.in?igsh=b3FiN3F4dWVmbXd3" target="_blank" rel="noopener noreferrer">
+                            <Instagram className="w-5 h-5 hover:text-primary transition-colors cursor-pointer" />
+                        </a>
                         <Facebook className="w-5 h-5 hover:text-primary transition-colors cursor-pointer" />
                         <Twitter className="w-5 h-5 hover:text-primary transition-colors cursor-pointer" />
                     </div>

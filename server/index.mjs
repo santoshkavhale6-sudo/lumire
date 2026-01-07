@@ -9,6 +9,7 @@ import userRoutes from './routes/userRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import wishlistRoutes from './routes/wishlistRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import shareRoutes from './routes/shareRoutes.js';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/share', shareRoutes);
 
 // AI Agent routes (now easy to import natively if needed)
 import agentRoutes from './routes/agentRoutes.mjs';

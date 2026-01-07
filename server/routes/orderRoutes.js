@@ -1,22 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { addOrderItems, verifyPayment, getOrderById, updateOrderStatus, getOrders, getAnalytics } = require('../controllers/orderController');
+const { addOrderItems, verifyPayment, getOrderById, updateOrderStatus, getOrders, getAnalytics, getMyOrders } = require('../controllers/orderController');
+const { protect, admin } = require('../middleware/authMiddleware');
 
-// Middleware to simulate auth (since we don't have full JWT validation middleware yet)
-const mockProtect = (req, res, next) => {
-    // In a real app, verify JWT here. For now, we trust the frontend 'user' if passed or default to a guest/admin
-    // This is a TEMPORARY convenience for the demo to work without headers setup
-    if (req.headers.authorization) {
-        // decode token logic would go here
-    }
-    next();
-};
-
-router.post('/', mockProtect, addOrderItems);
-router.post('/verify', mockProtect, verifyPayment);
-router.get('/', mockProtect, getOrders);
-router.get('/analytics', mockProtect, getAnalytics);
-router.get('/:id', mockProtect, getOrderById);
-router.put('/:id/status', mockProtect, updateOrderStatus);
+router.post('/', protect, addOrderItems);
+router.post('/verify', protect, verifyPayment);
+router.get('/myorders', protect, getMyOrders);
+router.get('/analytics', protect, admin, getAnalytics);
+router.get('/:id', protect, getOrderById);
+router.get('/', protect, admin, getOrders);
+router.put('/:id/status', protect, admin, updateOrderStatus);
 
 module.exports = router;

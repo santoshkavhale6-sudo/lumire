@@ -8,7 +8,15 @@ const productSchema = mongoose.Schema({
     description: { type: String, required: true },
     brand: { type: String, required: true, default: 'LUMIÈRE' },
     category: { type: String, required: true },
+    category: { type: String, required: true },
     subcategory: { type: String },
+
+    // Filter Fields
+    metal: { type: String }, // Gold, Silver, Rose Gold
+    stone: { type: String }, // Diamond, Pearl, Ruby, Sapphire, None
+    occasion: { type: String }, // Wedding, Anniversary, Birthday, Daily Wear, Gifting
+    gender: { type: String }, // Men, Women, Unisex
+    soldCount: { type: Number, default: 0 },
 
     // Inventory & Variants
     price: { type: Number, required: true, default: 0 },
