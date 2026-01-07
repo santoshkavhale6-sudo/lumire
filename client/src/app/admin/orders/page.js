@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { Search, Filter, Eye, FileText, Truck } from 'lucide-react';
-import { mockOrders } from '@/lib/mockData';
+import { Search, Filter, Eye, FileText, Truck, RefreshCw } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { getApiUrl } from '@/lib/api';
 import { formattedPrice } from '@/lib/data';
 
 const statusColors = {
@@ -16,9 +17,35 @@ const statusColors = {
 };
 
 export default function AdminOrders() {
-    // using mockData for UI dev, connect to API later
-    const [orders, setOrders] = useState(mockOrders);
+    const { user } = useAuth();
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [filterStatus, setFilterStatus] = useState('All');
+
+    const fetchOrders = async () => {
+        if (!user?.token) return;
+        setLoading(true);
+        try {
+            const res = await fetch(getApiUrl('orders'), {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            if (!res.ok) throw new Error('Could not fetch orders');
+            const data = await res.json();
+            setOrders(data);
+        } catch (err) {
+            console.error("Admin Fetch Orders Error:", err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrders();
+    }, [user]);
 
     const filteredOrders = filterStatus === 'All'
         ? orders
@@ -57,8 +84,8 @@ export default function AdminOrders() {
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterStatus === status
-                                        ? 'bg-primary text-white'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    ? 'bg-primary text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
                                 {status}
@@ -82,7 +109,22 @@ export default function AdminOrders() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {filteredOrders.length === 0 ? (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="7" className="p-12 text-center text-gray-500">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <RefreshCw className="w-8 h-8 animate-spin text-primary/40" />
+                                            <span>Recalling all treasures...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : error ? (
+                                <tr>
+                                    <td colSpan="7" className="p-8 text-center text-red-500">
+                                        Error: {error}
+                                    </td>
+                                </tr>
+                            ) : filteredOrders.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="p-8 text-center text-gray-500">No orders found.</td>
                                 </tr>
