@@ -3,10 +3,10 @@ const router = express.Router();
 const {
     authUser,
     registerUser,
-    getUserProfile,
     getUsers
 } = require('../controllers/userController');
 const {
+    getUserProfile,
     updateUserProfile,
     manageAddress,
     manageGifts

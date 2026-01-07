@@ -17,6 +17,8 @@ const authUser = async (req, res) => {
                 email: user.email,
                 isAdmin: user.isAdmin,
                 role: user.role,
+                wallet: user.wallet,
+                preferences: user.preferences,
                 token: generateToken(user._id)
             });
         } else {

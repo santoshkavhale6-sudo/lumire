@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { formattedPrice } from '@/lib/data';
+import { getLegacyText } from '@/lib/persuasion';
 
 const CartDrawer = () => {
     const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -96,13 +97,13 @@ const CartDrawer = () => {
                                 </div>
                                 <p className="text-xs text-muted-foreground text-center">Shipping and taxes calculated at checkout.</p>
                                 <Button
-                                    className="w-full py-6 text-base"
+                                    className="w-full py-7 text-sm uppercase tracking-widest font-bold bg-[#C9A24D] hover:bg-[#B69143] text-white rounded-none shadow-lg transition-all duration-500"
                                     onClick={() => {
                                         setIsCartOpen(false);
                                         router.push('/checkout');
                                     }}
                                 >
-                                    Checkout
+                                    {getLegacyText('CHECKOUT')}
                                 </Button>
                             </div>
                         )}

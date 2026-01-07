@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Users, ShoppingCart, Settings, LogOut, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Package, Users, ShoppingCart, Settings, LogOut, BarChart3, Heart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +16,7 @@ export default function AdminLayout({ children }) {
         { name: 'Products', href: '/admin/products', icon: Package },
         { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
         { name: 'Customers', href: '/admin/customers', icon: Users },
+        { name: 'Relationship Mgr', href: '/admin/persuasion', icon: Heart },
         { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
         { name: 'Settings', href: '/admin/settings', icon: Settings }
     ];

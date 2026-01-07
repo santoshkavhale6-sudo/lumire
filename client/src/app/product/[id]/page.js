@@ -28,6 +28,14 @@ export default function ProductPage() {
     const [selectedImage, setSelectedImage] = useState(null);
     const { addToCart } = useCart();
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+    const { user } = useAuth();
+    const { logBehavior } = usePersuasionTracking(user);
+
+    useEffect(() => {
+        if (product) {
+            logBehavior('PRODUCT_VIEW', { productId: product._id, intent: 'Luxury' });
+        }
+    }, [product]);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -112,7 +120,9 @@ export default function ProductPage() {
 
                             {/* Actions */}
                             <div className="flex flex-col gap-4">
-                                <Button size="lg" className="w-full text-base py-6" onClick={() => addToCart(product)}>Add to Cart</Button>
+                                <Button size="lg" className="w-full text-base py-7 bg-[#C9A24D] hover:bg-[#B69143] text-white rounded-none uppercase tracking-widest font-bold shadow-xl shadow-[#C9A24D]/20 transition-all duration-500 hover:scale-[1.02]" onClick={() => addToCart(product)}>
+                                    {getLegacyText('ADD_TO_CART')}
+                                </Button>
                                 <div className="flex gap-4">
                                     <Button
                                         variant="outline"

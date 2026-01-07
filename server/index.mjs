@@ -33,7 +33,9 @@ app.use('/api/share', shareRoutes);
 
 // AI Agent routes (now easy to import natively if needed)
 import agentRoutes from './routes/agentRoutes.mjs';
+import persuasionRoutes from './routes/persuasionRoutes.js';
 app.use('/api/agents', agentRoutes);
+app.use('/api/persuasion', persuasionRoutes);
 
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });

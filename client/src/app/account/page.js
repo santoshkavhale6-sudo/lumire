@@ -87,7 +87,7 @@ export default function AccountOverview() {
                     </div>
 
                     <div className="md:ml-auto">
-                        <Link href="/account/settings">
+                        <Link href="/account/security">
                             <Button variant="outline" className="rounded-full px-6">Edit Identity</Button>
                         </Link>
                     </div>
